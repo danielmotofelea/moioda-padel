@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoIoDa · Pádel Recovery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070C12;
+    --surface: #0C1520;
+    --surface2: #111D2B;
+    --border: #1A2E42;
+    --text: #E8F4FF;
+    --muted: #5A7A90;
+    --grad: linear-gradient(135deg, #1B3F6B, #00C6B2);
+    --grad-hover: linear-gradient(135deg, #162f50, #00a89a);
+    --accent: #1B3F6B;
+    --accent2: #00C6B2;
+    --pre-color: #4DD9C0;
+    --post-color: #6EE86E;
+    --danger: #FF5566;
+    --danger-bg: rgba(255,85,102,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7,12,18,0.94);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 72px;
+  }
+
+  .brand {
+    display: flex; align-items: center;
+    height: 100%;
+  }
+  .brand svg {
+    height: 52px;
+    width: auto;
+  }
+
+  .nav-actions { display: flex; gap: 0.75rem; align-items: center; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 0.5rem 1.1rem;
+    transition: opacity 0.15s, transform 0.1s;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+  }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary { background: var(--grad); color: #fff; }
+  .btn-primary:hover { opacity: 0.88; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+  }
+  .btn-danger:hover { background: var(--danger-bg); }
+
+  .btn-sm { padding: 0.32rem 0.7rem; font-size: 0.78rem; }
+
+  .slot-chip {
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.28rem 0.65rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .slot-chip:active { transform: scale(0.96); }
+
+  .slot-chip.pre-free {
+    background: rgba(77,217,192,0.1);
+    color: var(--pre-color);
+    border: 1px solid rgba(77,217,192,0.25);
+  }
+  .slot-chip.pre-free:hover { background: rgba(77,217,192,0.2); }
+
+  .slot-chip.post-free {
+    background: rgba(110,232,110,0.1);
+    color: var(--post-color);
+    border: 1px solid rgba(110,232,110,0.25);
+  }
+  .slot-chip.post-free:hover { background: rgba(110,232,110,0.2); }
+
+  .slot-chip.taken-other {
+    background: rgba(255,255,255,0.03);
+    color: #3A4A65;
+    border: 1px solid var(--border);
+    cursor: not-allowed;
+    text-decoration: line-through;
+  }
+
+  .slot-cancel-btn {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.38rem;
+    background: rgba(255,85,102,0.07);
+    color: var(--danger);
+    border: 1px solid rgba(255,85,102,0.22);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.15s;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .slot-cancel-btn:hover { background: rgba(255,85,102,0.15); }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 500px;
+    background: radial-gradient(ellipse, rgba(0,198,178,0.12) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: 40px; left: 50%; transform: translateX(-50%) translateX(160px);
+    width: 300px; height: 300px;
+    background: radial-gradient(ellipse, rgba(110,232,110,0.06) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-label {
+    display: inline-block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    line-height: 0.95;
+    margin-bottom: 0.6rem;
+  }
+  h1 .grad {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 480px;
+    margin: 1rem auto 2.5rem;
+  }
+
+  /* ── EVENTS GRID ── */
+  .section { padding: 2rem; max-width: 1000px; margin: 0 auto; }
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .event-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .event-card:hover { border-color: #2A3A5A; }
+
+  .event-card-header {
+    padding: 1.25rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .event-date-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    display: flex; align-items: center; gap: 0.35rem;
+  }
+
+  .event-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 0.3rem;
+  }
+
+  .event-location {
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+
+  .event-card-body { padding: 1rem 1.25rem 1.25rem; }
+
+  .slots-section { margin-bottom: 1rem; }
+  .slots-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+  .slots-label.pre { color: var(--pre-color); }
+  .slots-label.post { color: var(--post-color); }
+
+  .slots-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+
+  .empty-events {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  /* ── IDENTITY BAR ── */
+  .identity-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.65rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .identity-bar-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 0.35rem;
+  }
+  .identity-input-wrap {
+    display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 220px; max-width: 360px;
+  }
+  .identity-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .identity-input:focus { border-color: var(--accent2); }
+  .identity-input::placeholder { color: var(--muted); opacity: 0.6; }
+  .identity-status {
+    font-size: 0.78rem;
+    display: flex; align-items: center; gap: 0.3rem;
+    white-space: nowrap;
+  }
+  .identity-status.identified { color: var(--pre-color); }
+  .identity-status.none { color: var(--muted); }
+
+  /* ── MY SLOT chip ── */
+  .slot-chip.mine-pre {
+    background: rgba(77,217,192,0.22);
+    color: var(--pre-color);
+    border: 1.5px solid var(--pre-color);
+    font-weight: 600;
+  }
+  .slot-chip.mine-post {
+    background: rgba(110,232,110,0.22);
+    color: var(--post-color);
+    border: 1.5px solid var(--post-color);
+    font-weight: 600;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 420px;
+    padding: 2rem;
+    position: relative;
+  }
+
+  .modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    transition: background 0.15s, color 0.15s;
+  }
+  .modal-close:hover { background: var(--surface2); color: var(--text); }
+
+  .modal-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+
+  .form-group { margin-bottom: 1.1rem; }
+  .form-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.04em;
+  }
+  .form-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.6rem 0.85rem;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--muted); opacity: 0.6; }
+
+  .form-error {
+    font-size: 0.78rem;
+    color: var(--danger);
+    margin-top: 0.35rem;
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+
+  .modal-info {
+    background: var(--surface2);
+    border-left: 3px solid;
+    border-radius: 0 6px 6px 0;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+  }
+  .modal-info.pre { border-color: var(--pre-color); }
+  .modal-info.post { border-color: var(--post-color); }
+
+  /* ── ADMIN ── */
+  .admin-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: calc(100vh - 64px);
+  }
+
+  .admin-sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    display: flex; flex-direction: column;
+  }
+
+  .sidebar-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    padding: 0 0.5rem;
+  }
+
+  .sidebar-item {
+    display: flex; align-items: center; gap: 0.5rem;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 0.15rem;
+    transition: background 0.15s;
+  }
+  .sidebar-item:hover { background: var(--surface2); }
+  .sidebar-item.active { background: rgba(0,198,178,0.12); color: var(--accent2); font-weight: 500; }
+
+  .sidebar-bottom { margin-top: auto; padding-top: 2rem; }
+
+  .admin-main { padding: 2rem; overflow-y: auto; }
+
+  .admin-section { display: none; }
+  .admin-section.active { display: block; }
+
+  .admin-section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  th {
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.015); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+  }
+  .badge-pre { background: rgba(77,217,192,0.12); color: var(--pre-color); }
+  .badge-post { background: rgba(110,232,110,0.12); color: var(--post-color); }
+
+  .no-data {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* ── ADD EVENT FORM ── */
+  .add-event-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 540px;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── LOGIN ── */
+  .login-wrap {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+  }
+  .login-wrap::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(ellipse, rgba(0,198,178,0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 380px;
+    position: relative;
+  }
+
+  .login-icon {
+    width: 48px; height: 48px;
+    background: rgba(0,198,178,0.12);
+    border: 1px solid rgba(0,198,178,0.25);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .login-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.3rem;
+  }
+
+  .login-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 2rem; right: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.875rem;
+    max-width: 320px;
+    z-index: 999;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.22s;
+    pointer-events: none;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.success { border-color: rgba(77,217,192,0.4); color: var(--pre-color); }
+  #toast.error { border-color: rgba(255,85,102,0.4); color: var(--danger); }
+  #toast.info { border-color: rgba(0,198,178,0.4); color: var(--accent2); }
+
+  /* ── UTIL ── */
+  .divider { height: 1px; background: var(--border); margin: 1.75rem 0; }
+  .flex { display: flex; }
+  .gap-2 { gap: 0.5rem; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .mb-1 { margin-bottom: 0.5rem; }
+  .mb-2 { margin-bottom: 1rem; }
+
+  .sub-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 640px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-sidebar { border-right: none; border-bottom: 1px solid var(--border); padding: 1rem; }
+    h1 { font-size: 2.8rem; }
+    nav { padding: 0 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ SVG DEFS (inline sprite) ═══════════ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="icon-padel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="10" cy="10" r="7"/>
+    <line x1="15.5" y1="15.5" x2="22" y2="22"/>
+    <line x1="7" y1="10" x2="13" y2="10"/>
+    <line x1="10" y1="7" x2="10" y2="13"/>
+  </symbol>
+  <symbol id="icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="3"/>
+    <line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8" y1="2" x2="8" y2="6"/>
+    <line x1="3" y1="10" x2="21" y2="10"/>
+  </symbol>
+  <symbol id="icon-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+    <circle cx="12" cy="9" r="2.5"/>
+  </symbol>
+  <symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <polyline points="12 7 12 12 15.5 15.5"/>
+  </symbol>
+  <symbol id="icon-before" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <polyline points="12 7 12 12 9 15"/>
+    <line x1="7" y1="12" x2="3" y2="12"/>
+    <polyline points="5 10 3 12 5 14"/>
+  </symbol>
+  <symbol id="icon-after" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <polyline points="12 7 12 12 15 15"/>
+    <line x1="17" y1="12" x2="21" y2="12"/>
+    <polyline points="19 10 21 12 19 14"/>
+  </symbol>
+  <symbol id="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </symbol>
+  <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="5" y="11" width="14" height="11" rx="2"/>
+    <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+  </symbol>
+  <symbol id="icon-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="9" y1="6" x2="20" y2="6"/>
+    <line x1="9" y1="12" x2="20" y2="12"/>
+    <line x1="9" y1="18" x2="20" y2="18"/>
+    <circle cx="4" cy="6" r="1.2" fill="currentColor" stroke="none"/>
+    <circle cx="4" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+    <circle cx="4" cy="18" r="1.2" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <line x1="12" y1="5" x2="12" y2="19"/>
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </symbol>
+  <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="3 6 5 6 21 6"/>
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+    <path d="M10 11v6M14 11v6"/>
+    <path d="M9 6V4h6v2"/>
+  </symbol>
+  <symbol id="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </symbol>
+  <symbol id="icon-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/>
+    <line x1="21" y1="12" x2="9" y2="12"/>
+  </symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </symbol>
+  <symbol id="icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="8" x2="12" y2="12"/>
+    <line x1="12" y1="16" x2="12.01" y2="16"/>
+  </symbol>
+  <symbol id="icon-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 12 19.79 19.79 0 0 1 1 3.18 2 2 0 0 1 2.98 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+  </symbol>
+  <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="16" x2="12" y2="12"/>
+    <line x1="12" y1="8" x2="12.01" y2="8"/>
+  </symbol>
+</svg>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav>
+  <div class="brand">
+    <svg viewBox="0 0 460 460" xmlns="http://www.w3.org/2000/svg" aria-label="MoIoDa by Viper Pádel">
+      <g transform="translate(230,230)">
+        <circle cx="0" cy="0" r="158" fill="#0F2744"/>
+        <path d="M-155,-40 Q-120,-80 -60,-95" fill="none" stroke="#00C6B2" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+        <path d="M-148,-10 Q-110,-55 -45,-65" fill="none" stroke="#00C6B2" stroke-width="3.5" stroke-linecap="round" opacity="0.6"/>
+        <path d="M-140,20 Q-100,-30 -32,-40" fill="none" stroke="#00C6B2" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
+        <path d="M155,40 Q120,80 60,95" fill="none" stroke="#00C6B2" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+        <path d="M148,10 Q110,55 45,65" fill="none" stroke="#00C6B2" stroke-width="3.5" stroke-linecap="round" opacity="0.6"/>
+        <path d="M140,-20 Q100,30 32,40" fill="none" stroke="#00C6B2" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
+        <g fill="#FFFFFF" stroke="#0F2744" stroke-width="2.5">
+          <ellipse cx="38" cy="68" rx="42" ry="22" transform="rotate(-38,38,68)"/>
+          <path d="M18,58 Q8,35 15,12 Q18,4 24,8 Q30,12 26,35 Z"/>
+          <path d="M32,52 Q25,28 34,6 Q37,-2 43,2 Q49,6 42,30 Z"/>
+          <path d="M46,50 Q42,26 53,6 Q57,-2 63,3 Q68,8 58,32 Z"/>
+          <path d="M58,55 Q58,32 70,16 Q75,9 80,15 Q84,22 70,40 Z"/>
+          <path d="M10,70 Q-10,60 -14,44 Q-16,35 -8,32 Q0,30 8,48 Z"/>
+        </g>
+        <g fill="#FFFFFF" stroke="#0F2744" stroke-width="2.5" transform="rotate(180)">
+          <ellipse cx="38" cy="68" rx="42" ry="22" transform="rotate(-38,38,68)"/>
+          <path d="M18,58 Q8,35 15,12 Q18,4 24,8 Q30,12 26,35 Z"/>
+          <path d="M32,52 Q25,28 34,6 Q37,-2 43,2 Q49,6 42,30 Z"/>
+          <path d="M46,50 Q42,26 53,6 Q57,-2 63,3 Q68,8 58,32 Z"/>
+          <path d="M58,55 Q58,32 70,16 Q75,9 80,15 Q84,22 70,40 Z"/>
+          <path d="M10,70 Q-10,60 -14,44 Q-16,35 -8,32 Q0,30 8,48 Z"/>
+        </g>
+        <ellipse cx="-8" cy="-28" rx="62" ry="80" transform="rotate(-28,-8,-28)" fill="#0F2744"/>
+        <ellipse cx="-10" cy="-30" rx="58" ry="76" transform="rotate(-28,-10,-30)" fill="#7ED63A"/>
+        <path d="M-62,-10 Q-55,30 -20,65 Q0,82 22,72 Q44,62 38,30 Q32,0 10,-18 Z" fill="#1B3F6B" opacity="0.88"/>
+        <ellipse cx="-10" cy="-30" rx="58" ry="76" transform="rotate(-28,-10,-30)" fill="none" stroke="#0F2744" stroke-width="4"/>
+        <g fill="white" opacity="0.92">
+          <circle cx="-22" cy="-72" r="4.5"/><circle cx="-4" cy="-80" r="4.5"/><circle cx="14" cy="-72" r="4.5"/>
+          <circle cx="-30" cy="-54" r="4.5"/><circle cx="-12" cy="-62" r="4.5"/><circle cx="6" cy="-54" r="4.5"/><circle cx="22" cy="-46" r="4.5"/>
+          <circle cx="-36" cy="-36" r="4.5"/><circle cx="-18" cy="-44" r="4.5"/><circle cx="0" cy="-36" r="4.5"/><circle cx="16" cy="-28" r="4.5"/>
+          <circle cx="-40" cy="-18" r="4.5"/><circle cx="-22" cy="-26" r="4.5"/><circle cx="-4" cy="-18" r="4.5"/><circle cx="12" cy="-10" r="4.5"/>
+        </g>
+        <rect x="-10" y="46" width="20" height="50" rx="6" fill="#4A9E1A" stroke="#0F2744" stroke-width="2.5" transform="rotate(-28,-10,46)"/>
+        <g stroke="#3A8010" stroke-width="2" opacity="0.7">
+          <line x1="-14" y1="52" x2="4" y2="48" transform="rotate(-28,-10,46)"/>
+          <line x1="-14" y1="60" x2="4" y2="56" transform="rotate(-28,-10,46)"/>
+          <line x1="-14" y1="68" x2="4" y2="64" transform="rotate(-28,-10,46)"/>
+          <line x1="-14" y1="76" x2="4" y2="72" transform="rotate(-28,-10,46)"/>
+          <line x1="-14" y1="84" x2="4" y2="80" transform="rotate(-28,-10,46)"/>
+        </g>
+        <circle cx="-88" cy="32" r="20" fill="#7ED63A" stroke="#0F2744" stroke-width="2.5"/>
+        <path d="M-102,22 Q-88,18 -74,28" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+        <path d="M-100,36 Q-88,42 -76,36" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+      </g>
+    </svg>
+  </div>
+  <div class="nav-actions" id="navActions">
+    <button class="btn btn-ghost" onclick="showPage('home')">
+      <svg width="15" height="15"><use href="#icon-calendar"/></svg>
+      Eventos
+    </button>
+    <button class="btn btn-primary" onclick="showPage('adminLogin')">
+      <svg width="15" height="15"><use href="#icon-lock"/></svg>
+      Admin
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════ HOME ═══════════ -->
+<div class="page active" id="page-home">
+
+  <!-- BARRA DE IDENTIFICACIÓN -->
+  <div class="identity-bar">
+    <span class="identity-bar-label">
+      <svg width="14" height="14"><use href="#icon-phone"/></svg>
+      ¿Ya tienes una cita?
+    </span>
+    <div class="identity-input-wrap">
+      <input class="identity-input" id="identityTel" type="tel"
+             placeholder="Tu teléfono para ver tus citas"
+             oninput="onIdentityInput()">
+      <button class="btn btn-ghost btn-sm" onclick="clearIdentity()" id="identityClearBtn" style="display:none">
+        <svg width="13" height="13"><use href="#icon-close"/></svg>
+      </button>
+    </div>
+    <span class="identity-status none" id="identityStatus">
+      <svg width="13" height="13"><use href="#icon-info"/></svg>
+      Introduce tu teléfono para gestionar tus citas
+    </span>
+  </div>
+
+  <div class="hero">
+    <span class="hero-label">Gestión de citas · Pádel</span>
+    <h1><span class="grad">Reserva</span><br>tu cita</h1>
+    <p class="hero-sub">Apúntate a una sesión de 5 minutos antes o después de tu evento. Rápido, sin complicaciones.</p>
+  </div>
+  <div class="section">
+    <h2 class="section-title">Próximos eventos</h2>
+    <div class="events-grid" id="eventsGrid">
+      <div class="empty-events">No hay eventos disponibles aún.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ADMIN LOGIN ═══════════ -->
+<div class="page" id="page-adminLogin">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-icon">
+        <svg width="22" height="22" style="color:var(--accent)"><use href="#icon-lock"/></svg>
+      </div>
+      <h2 class="login-title">Acceso admin</h2>
+      <p class="login-sub">Introduce tus credenciales para gestionar eventos y citas.</p>
+      <div class="form-group">
+        <label class="form-label">Usuario</label>
+        <input class="form-input" id="loginUser" type="text" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input class="form-input" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
+        <div class="form-error" id="loginError"></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:0.7rem;justify-content:center;" onclick="doLogin()">
+        Entrar
+      </button>
+      <div style="margin-top:1rem;text-align:center">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('home')">Volver a eventos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ADMIN PANEL ═══════════ -->
+<div class="page" id="page-admin">
+  <div class="admin-grid">
+    <aside class="admin-sidebar">
+      <div class="sidebar-title">Panel</div>
+      <button class="sidebar-item active" id="sb-citas" onclick="showAdminSection('citas')">
+        <svg width="16" height="16"><use href="#icon-list"/></svg>
+        Citas registradas
+      </button>
+      <button class="sidebar-item" id="sb-eventos" onclick="showAdminSection('eventos')">
+        <svg width="16" height="16"><use href="#icon-calendar"/></svg>
+        Gestionar eventos
+      </button>
+      <div class="sidebar-bottom">
+        <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;" onclick="doLogout()">
+          <svg width="14" height="14"><use href="#icon-logout"/></svg>
+          Cerrar sesión
+        </button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <!-- CITAS -->
+      <div class="admin-section active" id="adminSection-citas">
+        <h2 class="admin-section-title">Citas registradas</h2>
+        <div id="adminCitasContent"></div>
+      </div>
+
+      <!-- EVENTOS -->
+      <div class="admin-section" id="adminSection-eventos">
+        <h2 class="admin-section-title">Gestionar eventos</h2>
+        <div class="add-event-card">
+          <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:0.4rem;">
+            <svg width="16" height="16" style="color:var(--accent)"><use href="#icon-plus"/></svg>
+            Añadir evento
+          </h3>
+          <div class="form-group">
+            <label class="form-label">Nombre del evento</label>
+            <input class="form-input" id="evNombre" type="text" placeholder="Torneo Open Málaga">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="form-group">
+              <label class="form-label">Fecha</label>
+              <input class="form-input" id="evFecha" type="date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hora</label>
+              <input class="form-input" id="evHora" type="time">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ubicación</label>
+            <input class="form-input" id="evUbicacion" type="text" placeholder="Club Viper Pádel, Pista 3">
+          </div>
+          <div class="form-error" id="evError"></div>
+          <button class="btn btn-primary" style="margin-top:0.5rem;" onclick="addEvent()">
+            <svg width="14" height="14"><use href="#icon-plus"/></svg>
+            Crear evento
+          </button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="sub-title">Eventos activos</div>
+        <div id="adminEventsList"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL RESERVA ═══════════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">
+      <svg width="16" height="16"><use href="#icon-close"/></svg>
+    </button>
+    <h3 class="modal-title" id="modalTitle">Reservar cita</h3>
+    <div class="modal-info" id="modalInfo"></div>
+    <div class="form-group">
+      <label class="form-label">Nombre y apellidos</label>
+      <input class="form-input" id="regNombre" type="text" placeholder="Carlos García López">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Teléfono</label>
+      <input class="form-input" id="regTelefono" type="tel" placeholder="+34 600 000 000">
+    </div>
+    <div class="form-error" id="regError"></div>
+    <button class="btn btn-primary" style="width:100%;padding:0.7rem;margin-top:0.5rem;justify-content:center;" onclick="confirmBooking()">
+      <svg width="15" height="15"><use href="#icon-check"/></svg>
+      Confirmar reserva
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL CANCELAR ═══════════ -->
+<div class="modal-overlay" id="cancelOverlay">
+  <div class="modal" style="max-width:380px;">
+    <button class="modal-close" onclick="closeCancelModal()">
+      <svg width="16" height="16"><use href="#icon-close"/></svg>
+    </button>
+    <h3 class="modal-title">
+      <svg width="20" height="20" style="color:var(--danger)"><use href="#icon-alert"/></svg>
+      Cancelar cita
+    </h3>
+    <p style="color:var(--muted);font-size:0.875rem;margin-bottom:1.5rem;line-height:1.6;" id="cancelInfo"></p>
+    <div class="flex gap-2" style="margin-top:0.5rem;">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="closeCancelModal()">Volver</button>
+      <button class="btn btn-danger" style="flex:1;justify-content:center;" onclick="confirmCancel()">
+        <svg width="14" height="14"><use href="#icon-trash"/></svg>
+        Sí, cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ TOAST ═══════════ -->
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════
+//  STATE
+// ════════════════════════════════
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'viper2024';
+
+let state = {
+  identifiedTel: '',   // teléfono que el usuario ha introducido en la barra
+  events: [
+    {
+      id: 'demo1',
+      nombre: 'Torneo Open Spring',
+      fecha: '2026-10-18',
+      hora: '10:00',
+      ubicacion: 'Club Viper Pádel, Pista Central',
+      slots: {
+        pre: [
+          { id: 'pre1', time: '09:45', booking: null },
+          { id: 'pre2', time: '09:50', booking: null },
+          { id: 'pre3', time: '09:55', booking: null },
+        ],
+        post: [
+          { id: 'post1', time: '12:00', booking: null },
+          { id: 'post2', time: '12:05', booking: null },
+          { id: 'post3', time: '12:10', booking: null },
+          { id: 'post4', time: '12:15', booking: null },
+        ]
+      }
+    }
+  ],
+  isAdmin: false,
+  pendingSlot: null,
+  cancelSlot: null,
+};
+
+// ════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'home') renderEvents();
+  if (name === 'admin') { renderAdminCitas(); renderAdminEvents(); }
+}
+
+function showAdminSection(section) {
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('adminSection-' + section).classList.add('active');
+  document.getElementById('sb-' + section).classList.add('active');
+  if (section === 'citas') renderAdminCitas();
+  if (section === 'eventos') renderAdminEvents();
+}
+
+// ════════════════════════════════
+//  AUTH
+// ════════════════════════════════
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  document.getElementById('loginError').textContent = '';
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    state.isAdmin = true;
+    showPage('admin');
+  } else {
+    document.getElementById('loginError').innerHTML =
+      '<svg width="13" height="13"><use href="#icon-alert"/></svg> Usuario o contraseña incorrectos.';
+  }
+}
+
+function doLogout() {
+  state.isAdmin = false;
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  showPage('home');
+}
+
+// ════════════════════════════════
+//  HELPERS
+// ════════════════════════════════
+function genId() { return Math.random().toString(36).slice(2, 10); }
+
+function formatDate(d) {
+  return new Date(d + 'T12:00:00').toLocaleDateString('es-ES', {
+    weekday: 'short', day: 'numeric', month: 'long', year: 'numeric'
+  });
+}
+
+function buildSlots(hora) {
+  const [h, m] = hora.split(':').map(Number);
+  const toTime = mins => String(Math.floor(mins/60)).padStart(2,'0') + ':' + String(mins%60).padStart(2,'0');
+  const base = h * 60 + m;
+  return {
+    pre: [
+      { id: genId(), time: toTime(base - 15), booking: null },
+      { id: genId(), time: toTime(base - 10), booking: null },
+      { id: genId(), time: toTime(base - 5),  booking: null },
+    ],
+    post: [
+      { id: genId(), time: toTime(base + 5),  booking: null },
+      { id: genId(), time: toTime(base + 10), booking: null },
+      { id: genId(), time: toTime(base + 15), booking: null },
+      { id: genId(), time: toTime(base + 20), booking: null },
+    ]
+  };
+}
+
+function getSlot(eventId, slotId, type) {
+  const ev = state.events.find(e => e.id === eventId);
+  return ev ? ev.slots[type].find(s => s.id === slotId) : null;
+}
+
+const svg = (id, size = 14, extra = '') =>
+  `<svg width="${size}" height="${size}" ${extra}><use href="#icon-${id}"/></svg>`;
+
+// ════════════════════════════════
+//  RENDER HOME
+// ════════════════════════════════
+function renderEvents() {
+  const grid = document.getElementById('eventsGrid');
+  if (!state.events.length) {
+    grid.innerHTML = '<div class="empty-events">No hay eventos disponibles aún.</div>';
+    return;
+  }
+  grid.innerHTML = state.events.map(ev => {
+    const preSlots = ev.slots.pre.map(s => renderSlotChip(ev.id, s, 'pre')).join('');
+    const postSlots = ev.slots.post.map(s => renderSlotChip(ev.id, s, 'post')).join('');
+    const preFree = ev.slots.pre.filter(s => !s.booking).length;
+    const postFree = ev.slots.post.filter(s => !s.booking).length;
+    return `
+      <div class="event-card">
+        <div class="event-card-header">
+          <div class="event-date-badge">
+            ${svg('calendar', 13)}
+            ${formatDate(ev.fecha)}
+          </div>
+          <div class="event-name">${ev.nombre}</div>
+          <div class="event-location">
+            ${svg('pin', 13)}
+            ${ev.ubicacion}&ensp;${svg('clock', 12)}&thinsp;${ev.hora}h
+          </div>
+        </div>
+        <div class="event-card-body">
+          <div class="slots-section">
+            <div class="slots-label pre">
+              ${svg('before', 13)}
+              Antes del evento &middot; ${preFree} libre${preFree !== 1 ? 's' : ''}
+            </div>
+            <div class="slots-row">${preSlots}</div>
+          </div>
+          <div class="slots-section" style="margin-bottom:0">
+            <div class="slots-label post">
+              ${svg('after', 13)}
+              Después del evento &middot; ${postFree} libre${postFree !== 1 ? 's' : ''}
+            </div>
+            <div class="slots-row">${postSlots}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderSlotChip(eventId, slot, type) {
+  if (!slot.booking) {
+    return `<button class="slot-chip ${type}-free" onclick="openBookingModal('${eventId}','${slot.id}','${type}')">${slot.time}</button>`;
+  }
+  const ismine = state.identifiedTel && slot.booking.tel === state.identifiedTel;
+  if (ismine) {
+    return `
+      <button class="slot-chip mine-${type}" title="Tu cita — pulsa ✕ para cancelar" disabled>${slot.time}</button>
+      <button class="slot-cancel-btn" title="Cancelar mi cita" onclick="openCancelModal('${eventId}','${slot.id}','${type}')">
+        ${svg('close', 10)}
+      </button>`;
+  }
+  return `<button class="slot-chip taken-other" disabled title="Ocupado">${slot.time}</button>`;
+}
+
+// ════════════════════════════════
+//  BOOKING MODAL
+// ════════════════════════════════
+function openBookingModal(eventId, slotId, type) {
+  const slot = getSlot(eventId, slotId, type);
+  if (!slot || slot.booking) return;
+  state.pendingSlot = { eventId, slotId, type };
+  const ev = state.events.find(e => e.id === eventId);
+  document.getElementById('modalTitle').innerHTML =
+    svg(type === 'pre' ? 'before' : 'after', 20, `style="color:var(--${type === 'pre' ? 'pre' : 'post'}-color)"`) +
+    (type === 'pre' ? ' Reservar cita previa' : ' Reservar cita posterior');
+  const info = document.getElementById('modalInfo');
+  info.className = 'modal-info ' + type;
+  info.textContent = `Cita de 5 min a las ${slot.time}h · ${type === 'pre' ? 'Antes' : 'Después'} de "${ev.nombre}"`;
+  document.getElementById('regNombre').value = '';
+  document.getElementById('regTelefono').value = '';
+  document.getElementById('regError').innerHTML = '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  state.pendingSlot = null;
+}
+
+function confirmBooking() {
+  const nombre = document.getElementById('regNombre').value.trim();
+  const tel = document.getElementById('regTelefono').value.trim();
+  const errEl = document.getElementById('regError');
+  errEl.innerHTML = '';
+  if (!nombre) { errEl.innerHTML = svg('alert',13) + ' Introduce tu nombre completo.'; return; }
+  if (!tel || tel.replace(/\s/g,'').length < 9) { errEl.innerHTML = svg('alert',13) + ' Introduce un teléfono válido.'; return; }
+  const { eventId, slotId, type } = state.pendingSlot;
+  const slot = getSlot(eventId, slotId, type);
+  if (!slot) { errEl.innerHTML = svg('alert',13) + ' Este hueco ya no está disponible.'; return; }
+  if (slot.booking) { errEl.innerHTML = svg('alert',13) + ' Este hueco acaba de ser reservado.'; return; }
+  slot.booking = { nombre, tel, reservadoEn: new Date().toISOString() };
+  closeModal();
+  renderEvents();
+  showToast('Cita reservada a las ' + slot.time + 'h.', 'success');
+}
+
+// ════════════════════════════════
+//  CANCEL MODAL
+// ════════════════════════════════
+function openCancelModal(eventId, slotId, type) {
+  const slot = getSlot(eventId, slotId, type);
+  if (!slot || !slot.booking) return;
+  // Verify identity matches (double-check, even though button is only shown to owner)
+  if (!state.identifiedTel || slot.booking.tel !== state.identifiedTel) return;
+  state.cancelSlot = { eventId, slotId, type };
+  const ev = state.events.find(e => e.id === eventId);
+  document.getElementById('cancelInfo').innerHTML =
+    `¿Confirmas que quieres cancelar tu cita de las <strong>${slot.time}h</strong> en "${ev.nombre}"?<br>
+    <span style="color:var(--muted);font-size:0.8rem;margin-top:0.4rem;display:block;">Esta acción no se puede deshacer.</span>`;
+  document.getElementById('cancelOverlay').classList.add('open');
+}
+
+function closeCancelModal() {
+  document.getElementById('cancelOverlay').classList.remove('open');
+  state.cancelSlot = null;
+}
+
+function confirmCancel() {
+  const { eventId, slotId, type } = state.cancelSlot;
+  const slot = getSlot(eventId, slotId, type);
+  if (!slot || !slot.booking) { closeCancelModal(); return; }
+  slot.booking = null;
+  closeCancelModal();
+  updateIdentityStatus();
+  renderEvents();
+  showToast('Cita cancelada correctamente.', 'info');
+}
+
+// ════════════════════════════════
+//  ADMIN — CITAS
+// ════════════════════════════════
+function renderAdminCitas() {
+  const container = document.getElementById('adminCitasContent');
+  let html = '';
+  state.events.forEach(ev => {
+    const bookings = [
+      ...ev.slots.pre.filter(s => s.booking).map(s => ({ ...s.booking, time: s.time, type: 'pre', slotId: s.id })),
+      ...ev.slots.post.filter(s => s.booking).map(s => ({ ...s.booking, time: s.time, type: 'post', slotId: s.id })),
+    ].sort((a,b) => a.time.localeCompare(b.time));
+
+    html += `<h3 style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:700;margin:1.5rem 0 0.75rem;color:var(--muted);display:flex;align-items:center;gap:0.4rem;">
+      ${svg('calendar',14)} ${ev.nombre} &middot; ${formatDate(ev.fecha)}
+    </h3>`;
+
+    if (!bookings.length) {
+      html += `<div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0 1rem;">Sin citas registradas.</div>`;
+    } else {
+      html += `<div class="table-wrap"><table>
+        <thead><tr>
+          <th>Hora</th><th>Momento</th><th>${svg('user',12)} Nombre</th>
+          <th>${svg('phone',12)} Teléfono</th><th>Registrado</th><th></th>
+        </tr></thead><tbody>`;
+      bookings.forEach(b => {
+        const badge = b.type === 'pre'
+          ? `<span class="badge badge-pre">${svg('before',11)} Antes</span>`
+          : `<span class="badge badge-post">${svg('after',11)} Después</span>`;
+        html += `<tr>
+          <td><strong>${b.time}h</strong></td>
+          <td>${badge}</td>
+          <td>${b.nombre}</td>
+          <td><a href="tel:${b.tel}" style="color:var(--text);text-decoration:none;">${b.tel}</a></td>
+          <td style="color:var(--muted);font-size:0.75rem;">${new Date(b.reservadoEn).toLocaleString('es-ES')}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="adminCancelSlot('${ev.id}','${b.slotId}','${b.type}')">
+            ${svg('trash',13)} Cancelar
+          </button></td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+    }
+  });
+  if (!state.events.length) html = '<div class="no-data">No hay eventos creados.</div>';
+  container.innerHTML = html;
+}
+
+function adminCancelSlot(eventId, slotId, type) {
+  const slot = getSlot(eventId, slotId, type);
+  if (!slot) return;
+  slot.booking = null;
+  renderAdminCitas();
+  renderEvents();
+  showToast('Cita cancelada desde el panel de admin.', 'info');
+}
+
+// ════════════════════════════════
+//  ADMIN — EVENTS
+// ════════════════════════════════
+function addEvent() {
+  const nombre = document.getElementById('evNombre').value.trim();
+  const fecha = document.getElementById('evFecha').value;
+  const hora = document.getElementById('evHora').value;
+  const ubicacion = document.getElementById('evUbicacion').value.trim();
+  const errEl = document.getElementById('evError');
+  errEl.innerHTML = '';
+  if (!nombre)    { errEl.innerHTML = svg('alert',13) + ' El nombre es obligatorio.'; return; }
+  if (!fecha)     { errEl.innerHTML = svg('alert',13) + ' La fecha es obligatoria.'; return; }
+  if (!hora)      { errEl.innerHTML = svg('alert',13) + ' La hora es obligatoria.'; return; }
+  if (!ubicacion) { errEl.innerHTML = svg('alert',13) + ' La ubicación es obligatoria.'; return; }
+  state.events.push({ id: genId(), nombre, fecha, hora, ubicacion, slots: buildSlots(hora) });
+  ['evNombre','evFecha','evHora','evUbicacion'].forEach(id => document.getElementById(id).value = '');
+  renderAdminEvents();
+  showToast('Evento creado correctamente.', 'success');
+}
+
+function renderAdminEvents() {
+  const container = document.getElementById('adminEventsList');
+  if (!state.events.length) {
+    container.innerHTML = '<div class="no-data">No hay eventos. Crea el primero arriba.</div>';
+    return;
+  }
+  container.innerHTML = state.events.map(ev => {
+    const preBooked = ev.slots.pre.filter(s=>s.booking).length;
+    const postBooked = ev.slots.post.filter(s=>s.booking).length;
+    return `
+    <div class="event-card" style="margin-bottom:0.75rem;max-width:580px;">
+      <div class="event-card-header">
+        <div class="event-date-badge">${svg('calendar',13)} ${formatDate(ev.fecha)}</div>
+        <div class="event-name">${ev.nombre}</div>
+        <div class="event-location">${svg('pin',13)} ${ev.ubicacion} ${svg('clock',12)} ${ev.hora}h</div>
+      </div>
+      <div class="event-card-body flex items-center justify-between">
+        <div style="font-size:0.82rem;color:var(--muted);display:flex;gap:1rem;">
+          <span style="color:var(--pre-color);">${svg('before',13)} ${preBooked}/3 antes</span>
+          <span style="color:var(--post-color);">${svg('after',13)} ${postBooked}/4 después</span>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">
+          ${svg('trash',13)} Eliminar
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteEvent(id) {
+  state.events = state.events.filter(e => e.id !== id);
+  renderAdminEvents();
+  renderAdminCitas();
+  renderEvents();
+  showToast('Evento eliminado.', 'info');
+}
+
+// ════════════════════════════════
+//  TOAST
+// ════════════════════════════════
+let toastTimer;
+function showToast(msg, type = 'info') {
+  const icons = { success: 'check', error: 'alert', info: 'info' };
+  const t = document.getElementById('toast');
+  t.innerHTML = svg(icons[type] || 'info', 16) + msg;
+  t.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 3200);
+}
+
+// ════════════════════════════════
+//  IDENTITY BAR
+// ════════════════════════════════
+function onIdentityInput() {
+  const raw = document.getElementById('identityTel').value.trim();
+  state.identifiedTel = raw;
+  document.getElementById('identityClearBtn').style.display = raw ? '' : 'none';
+  updateIdentityStatus();
+  renderEvents();
+}
+
+function clearIdentity() {
+  document.getElementById('identityTel').value = '';
+  state.identifiedTel = '';
+  document.getElementById('identityClearBtn').style.display = 'none';
+  updateIdentityStatus();
+  renderEvents();
+}
+
+function updateIdentityStatus() {
+  const statusEl = document.getElementById('identityStatus');
+  if (!statusEl) return;
+  const tel = state.identifiedTel;
+  if (!tel || tel.replace(/\s/g,'').length < 9) {
+    statusEl.className = 'identity-status none';
+    statusEl.innerHTML = svg('info',13) + ' Introduce tu teléfono para gestionar tus citas';
+    return;
+  }
+  // Count bookings for this tel
+  const myBookings = state.events.reduce((acc, ev) => {
+    const pre = ev.slots.pre.filter(s => s.booking && s.booking.tel === tel).length;
+    const post = ev.slots.post.filter(s => s.booking && s.booking.tel === tel).length;
+    return acc + pre + post;
+  }, 0);
+  if (myBookings > 0) {
+    statusEl.className = 'identity-status identified';
+    statusEl.innerHTML = svg('check',13) + ` ${myBookings} cita${myBookings > 1 ? 's' : ''} encontrada${myBookings > 1 ? 's' : ''} — pulsa ✕ para cancelar`;
+  } else {
+    statusEl.className = 'identity-status none';
+    statusEl.innerHTML = svg('info',13) + ' Sin citas con este teléfono';
+  }
+}
+
+// ════════════════════════════════
+//  KEYBOARD
+// ════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeCancelModal(); }
+});
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+renderEvents();
+</script>
+</body>
+</html>
